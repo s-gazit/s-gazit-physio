@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>יומן פיזיותרפיה</title>
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="פיזיו">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#f4f6f6; --card:#ffffff; --ink:#14201f; --ink2:#4b5b59; --muted:#83918f;
+  --line:#dfe5e4; --accent:#0f766e; --accent-ink:#ffffff; --accent-soft:#e2f2f0;
+  --danger:#b42318; --grid:#e8eceb;
+  --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0e1413; --card:#18201f; --ink:#e9efee; --ink2:#a9b6b4; --muted:#76837f;
+    --line:#2a3432; --accent:#2fb8a9; --accent-ink:#06201d; --accent-soft:#16302d;
+    --danger:#f97066; --grid:#232c2b;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:17px;
+  overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+input,button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+.app{display:flex;flex-direction:column;height:100%}
+header{padding:calc(var(--safe-t) + 12px) 16px 10px;display:flex;align-items:center;gap:8px;background:var(--bg)}
+header h1{font-size:24px;margin:0;flex:1}
+main{flex:1;overflow-y:auto;padding:4px 16px 24px;-webkit-overflow-scrolling:touch}
+nav.tabs{display:flex;border-top:1px solid var(--line);background:var(--card);padding-bottom:var(--safe-b)}
+nav.tabs button{flex:1;border:0;background:none;padding:10px 0 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:13px;color:var(--muted)}
+nav.tabs button svg{width:26px;height:26px}
+nav.tabs button.on{color:var(--accent);font-weight:600}
+.view{display:none}.view.on{display:block}
+
+.icon-btn{border:0;background:var(--card);border-radius:12px;padding:8px 12px;font-size:15px;color:var(--accent);font-weight:600;border:1px solid var(--line)}
+.ex-list{display:flex;flex-direction:column;gap:10px}
+.ex-btn{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:right;border:0;border-radius:16px;
+  padding:18px 18px;background:var(--card);box-shadow:0 1px 2px rgba(0,0,0,.06);border:1px solid var(--line)}
+.ex-btn:active{transform:scale(.98);background:var(--accent-soft)}
+.ex-btn .nm{font-size:19px;font-weight:600}
+.ex-btn .tot{font-size:14px;color:var(--ink2);white-space:nowrap}
+.ex-btn .tot b{color:var(--accent);font-size:18px}
+.empty{color:var(--muted);text-align:center;padding:36px 12px;line-height:1.6}
+
+.edit-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.edit-row input{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);-webkit-user-select:text;user-select:text}
+.edit-row .mv,.edit-row .del{border:1px solid var(--line);background:var(--card);border-radius:12px;width:44px;height:46px;font-size:18px}
+.edit-row .del{color:var(--danger)}
+.primary{display:block;width:100%;border:0;border-radius:14px;padding:15px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:18px}
+.secondary{display:block;width:100%;border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--card);font-weight:600;color:var(--ink)}
+.danger-btn{display:block;width:100%;border:0;border-radius:14px;padding:14px;background:none;color:var(--danger);font-weight:600}
+
+/* day view */
+.daybar{display:flex;align-items:center;gap:6px;margin-bottom:12px}
+.daybar .arrow{border:1px solid var(--line);background:var(--card);border-radius:12px;width:44px;height:44px;font-size:20px}
+.daybar .title{flex:1;text-align:center}
+.daybar .title b{display:block;font-size:18px}
+.daybar .title span{font-size:13px;color:var(--muted)}
+.section-t{font-size:14px;color:var(--ink2);margin:16px 2px 8px;font-weight:600}
+.sum{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 14px}
+.sum-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.sum-row:last-child{border-bottom:0}
+.sum-row b{color:var(--accent)}
+.entries{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.entry{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:right}
+.entry:last-child{border-bottom:0}
+.entry:active{background:var(--accent-soft)}
+.entry .tm{font-variant-numeric:tabular-nums;color:var(--muted);font-size:15px;width:46px}
+.entry .nm{flex:1;font-weight:600}
+.entry .rp{color:var(--ink2);font-size:15px;white-space:nowrap}
+.swipe-hint{text-align:center;color:var(--muted);font-size:12px;margin-top:14px}
+
+/* sheets */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:flex-end;justify-content:center;z-index:10}
+.backdrop.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:18px 16px calc(var(--safe-b) + 18px);max-height:92vh;overflow-y:auto;animation:up .2s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.5}to{transform:none;opacity:1}}
+.sheet h2{margin:0 0 4px;font-size:22px;text-align:center}
+.sheet .sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:16px}
+.stepper{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:12px;text-align:center}
+.stepper label{display:block;color:var(--ink2);font-size:15px;margin-bottom:6px}
+.stepper .ctl{display:flex;align-items:center;justify-content:center;gap:14px}
+.stepper button{width:58px;height:58px;border-radius:50%;border:0;background:var(--accent-soft);color:var(--accent);font-size:30px;font-weight:600}
+.stepper input{width:96px;text-align:center;font-size:38px;font-weight:700;border:0;background:none;-webkit-user-select:text;user-select:text;font-variant-numeric:tabular-nums}
+.total-line{text-align:center;font-size:17px;margin:4px 0 16px;color:var(--ink2)}
+.total-line b{color:var(--accent);font-size:22px}
+.time-row{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px 14px;margin-bottom:12px}
+.time-row input{border:0;background:none;font-size:18px}
+.gap{height:10px}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head b{font-size:19px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.cal-grid .wd{font-size:13px;color:var(--muted);padding:4px 0}
+.cal-grid button{aspect-ratio:1;border:0;border-radius:12px;background:var(--card);font-size:16px;position:relative;font-variant-numeric:tabular-nums}
+.cal-grid button.has{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.cal-grid button.today{outline:2px solid var(--accent);outline-offset:-2px}
+.cal-grid button.sel{background:var(--accent);color:var(--accent-ink)}
+.cal-grid button:disabled{opacity:.35}
+
+/* progress */
+.chips{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:8px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-size:15px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 10px 8px;position:relative}
+.chart-card h3{margin:0 6px 2px;font-size:17px}
+.chart-card .cap{margin:0 6px 8px;font-size:13px;color:var(--muted)}
+.chart-card svg{display:block;width:100%;height:auto;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:13px;padding:6px 9px;border-radius:8px;white-space:nowrap;transform:translate(-50%,-100%);display:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.stat b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--ink2)}
+.ranges{display:flex;gap:6px;margin:10px 0 0;justify-content:center}
+.ranges .chip{padding:6px 12px;font-size:14px}
+
+.toast{position:fixed;bottom:calc(var(--safe-b) + 84px);left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:20;white-space:nowrap}
+.toast.on{opacity:1}
+.note{font-size:13px;color:var(--muted);line-height:1.5;margin:6px 2px 14px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 id="hdr">התרגילים שלי</h1>
+    <button class="icon-btn" id="hdrBtn">עריכה</button>
+  </header>
+
+  <main id="main">
+    <!-- exercises -->
+    <section class="view on" id="v-home">
+      <div id="homeList" class="ex-list"></div>
+      <div id="editArea" style="display:none">
+        <div id="editList"></div>
+        <div class="edit-row">
+          <input id="newName" placeholder="שם תרגיל חדש" enterkeyhint="done">
+        </div>
+        <button class="primary" id="addBtn">+ הוספת תרגיל</button>
+        <div class="gap"></div>
+        <button class="secondary" id="openData">גיבוי ושיתוף עם הפיזיותרפיסט</button>
+      </div>
+    </section>
+
+    <!-- day log -->
+    <section class="view" id="v-day">
+      <div class="daybar">
+        <button class="arrow" id="prevDay" aria-label="יום קודם">›</button>
+        <div class="title"><b id="dayTitle"></b><span id="daySub"></span></div>
+        <button class="arrow" id="nextDay" aria-label="יום הבא">‹</button>
+      </div>
+      <div id="dayBody"></div>
+      <div class="swipe-hint">החליקי ימינה ושמאלה כדי לעבור בין הימים</div>
+    </section>
+
+    <!-- progress -->
+    <section class="view" id="v-prog">
+      <div class="chips" id="progChips"></div>
+      <div id="progBody"></div>
+    </section>
+  </main>
+
+  <nav class="tabs">
+    <button data-tab="home" class="on">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg>תרגילים</button>
+    <button data-tab="day">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>יומן</button>
+    <button data-tab="prog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M5 16l5-5 4 3 6-7"/></svg>התקדמות</button>
+  </nav>
+</div>
+
+<!-- log / edit entry -->
+<div class="backdrop" id="logSheet">
+  <div class="sheet">
+    <h2 id="logTitle"></h2>
+    <div class="sub" id="logSub"></div>
+    <div class="stepper">
+      <label>סטים</label>
+      <div class="ctl">
+        <button data-step="sets" data-d="1">+</button>
+        <input id="inSets" type="number" inputmode="numeric" min="1">
+        <button data-step="sets" data-d="-1">−</button>
+      </div>
+    </div>
+    <div class="stepper">
+      <label>חזרות בכל סט</label>
+      <div class="ctl">
+        <button data-step="reps" data-d="1">+</button>
+        <input id="inReps" type="number" inputmode="numeric" min="1">
+        <button data-step="reps" data-d="-1">−</button>
+      </div>
+    </div>
+    <div class="time-row" id="timeRow"><span>שעה</span><input type="time" id="inTime"></div>
+    <div class="total-line">סה״כ <b id="logTotal">0</b> חזרות</div>
+    <button class="primary" id="saveLog">שמירה</button>
+    <div class="gap"></div>
+    <button class="secondary" data-close>ביטול</button>
+    <button class="danger-btn" id="delLog">מחיקת הרישום</button>
+  </div>
+</div>
+
+<!-- calendar -->
+<div class="backdrop" id="calSheet">
+  <div class="sheet">
+    <div class="cal-head">
+      <button class="icon-btn" id="calPrev" aria-label="חודש קודם">›</button>
+      <b id="calTitle"></b>
+      <button class="icon-btn" id="calNext" aria-label="חודש הבא">‹</button>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="gap"></div>
+    <button class="secondary" data-close>סגירה</button>
+  </div>
+</div>
+
+<!-- data -->
+<div class="backdrop" id="dataSheet">
+  <div class="sheet">
+    <h2>גיבוי ושיתוף</h2>
+    <div class="sub">הנתונים שמורים רק בטלפון הזה</div>
+    <button class="primary" id="exportCsv">שליחת טבלה לפיזיותרפיסט</button>
+    <p class="note">קובץ טבלה (נפתח באקסל) עם סיכום יומי לכל תרגיל ועם כל הרישומים.</p>
+    <button class="secondary" id="exportJson">שמירת קובץ גיבוי</button>
+    <p class="note">כדאי לשמור גיבוי ב-iCloud Drive או לשלוח אותו למייל פעם בשבוע בערך.</p>
+    <button class="secondary" id="importBtn">שחזור מקובץ גיבוי</button>
+    <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+    <p class="note">השחזור מחליף את כל הנתונים הנוכחיים בנתונים שבקובץ.</p>
+    <button class="secondary" data-close>סגירה</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+const KEY = 'physio-tracker-v1';
+const $ = s => document.querySelector(s);
+const HEB_DAYS = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const HEB_MONTHS = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+// ---------- storage ----------
+let db = load();
+function load(){
+  try{
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if(d && Array.isArray(d.exercises) && Array.isArray(d.logs)) return d;
+  }catch(e){}
+  return {exercises:[], logs:[]};
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(db)); }
+  catch(e){ toast('שגיאה בשמירה'); }
+}
+if(navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+const pad = n => String(n).padStart(2,'0');
+const dayKey = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const keyToDate = k => { const [y,m,d] = k.split('-').map(Number); return new Date(y,m-1,d); };
+const addDays = (k,n) => { const d = keyToDate(k); d.setDate(d.getDate()+n); return dayKey(d); };
+const todayKey = () => dayKey(new Date());
+const fmtTime = ts => { const d = new Date(ts); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+const exName = l => { const e = db.exercises.find(x=>x.id===l.exId); return e ? e.name : l.name; };
+const total = l => l.sets * l.reps;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function logsOn(k){ return db.logs.filter(l => dayKey(new Date(l.ts)) === k).sort((a,b)=>a.ts-b.ts); }
+function dayTotals(k){
+  const m = new Map();
+  for(const l of logsOn(k)){
+    const cur = m.get(l.exId) || {name:exName(l), reps:0, times:0};
+    cur.reps += total(l); cur.times++; m.set(l.exId, cur);
+  }
+  return m;
+}
+
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(toast._t); toast._t = setTimeout(()=>t.classList.remove('on'), 2200);
+}
+
+// ---------- tabs ----------
+let tab = 'home', editing = false;
+document.querySelectorAll('nav.tabs button').forEach(b => b.onclick = () => showTab(b.dataset.tab));
+function showTab(t){
+  tab = t;
+  document.querySelectorAll('nav.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab===t));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id==='v-'+t));
+  $('#main').scrollTop = 0;
+  render();
+}
+$('#hdrBtn').onclick = () => {
+  if(tab==='home'){ editing = !editing; render(); if(editing && !db.exercises.length) $('#newName').focus(); }
+  else if(tab==='day'){ calMonth = viewDay.slice(0,7); openCal(); }
+  else if(tab==='prog') showTab('day');
+};
+
+function render(){
+  if(tab==='home') renderHome();
+  if(tab==='day') renderDay();
+  if(tab==='prog') renderProg();
+}
+
+// ---------- home ----------
+function renderHome(){
+  $('#hdr').textContent = editing ? 'עריכת תרגילים' : 'התרגילים שלי';
+  $('#hdrBtn').textContent = editing ? 'סיום' : 'עריכה';
+  $('#homeList').style.display = editing ? 'none' : '';
+  $('#editArea').style.display = editing ? '' : 'none';
+  if(editing){ renderEdit(); return; }
+  const tots = dayTotals(todayKey());
+  if(!db.exercises.length){
+    $('#homeList').innerHTML = '<div class="empty">עדיין אין תרגילים.<br>לוחצים על <b>עריכה</b> למעלה ומוסיפים את התרגילים מהפיזיותרפיסט.</div><button class="primary" id="startEdit">הוספת תרגילים</button>';
+    $('#startEdit').onclick = () => { editing = true; render(); $('#newName').focus(); };
+    return;
+  }
+  $('#homeList').innerHTML = db.exercises.map(e => {
+    const t = tots.get(e.id);
+    return `<button class="ex-btn" data-id="${e.id}"><span class="nm">${esc(e.name)}</span>
+      <span class="tot">${t ? `היום: <b>${t.reps}</b>` : 'עוד לא היום'}</span></button>`;
+  }).join('');
+  $('#homeList').querySelectorAll('.ex-btn').forEach(b => b.onclick = () => openLog({exId:b.dataset.id}));
+}
+function renderEdit(){
+  $('#editList').innerHTML = db.exercises.map((e,i) => `
+    <div class="edit-row" data-id="${e.id}">
+      <input value="${esc(e.name)}" aria-label="שם התרגיל">
+      <button class="mv" data-mv="-1" ${i===0?'disabled':''} aria-label="הזזה למעלה">↑</button>
+      <button class="del" aria-label="מחיקה">✕</button>
+    </div>`).join('');
+  $('#editList').querySelectorAll('.edit-row').forEach(row => {
+    const id = row.dataset.id, ex = db.exercises.find(x=>x.id===id);
+    const inp = row.querySelector('input');
+    inp.onchange = () => { const v = inp.value.trim(); if(v){ ex.name = v; save(); } else inp.value = ex.name; };
+    row.querySelector('.mv').onclick = () => {
+      const i = db.exercises.indexOf(ex); if(i<1) return;
+      db.exercises.splice(i,1); db.exercises.splice(i-1,0,ex); save(); renderEdit();
+    };
+    row.querySelector('.del').onclick = () => {
+      if(!confirm(`למחוק את "${ex.name}" מרשימת התרגילים?\nהרישומים הקודמים יישמרו ביומן.`)) return;
+      db.exercises = db.exercises.filter(x=>x!==ex); save(); renderEdit();
+    };
+  });
+}
+function addExercise(){
+  const v = $('#newName').value.trim(); if(!v) return;
+  db.exercises.push({id:uid(), name:v}); save();
+  $('#newName').value = ''; renderEdit(); $('#newName').focus();
+}
+$('#addBtn').onclick = addExercise;
+$('#newName').addEventListener('keydown', e => { if(e.key==='Enter') addExercise(); });
+$('#openData').onclick = () => open('#dataSheet');
+
+// ---------- log sheet ----------
+let cur = null; // {exId, logId?}
+function open(sel){ $(sel).classList.add('on'); }
+function closeAll(){ document.querySelectorAll('.backdrop').forEach(b=>b.classList.remove('on')); }
+document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
+document.querySelectorAll('.backdrop').forEach(b => b.addEventListener('click', e => { if(e.target===b) closeAll(); }));
+
+function openLog({exId, logId}){
+  const log = logId && db.logs.find(l=>l.id===logId);
+  cur = {exId: log ? log.exId : exId, logId: log ? log.id : null};
+  const name = log ? exName(log) : db.exercises.find(e=>e.id===exId).name;
+  const last = db.logs.filter(l=>l.exId===cur.exId).sort((a,b)=>b.ts-a.ts)[0];
+  $('#logTitle').textContent = name;
+  $('#inSets').value = log ? log.sets : (last ? last.sets : 1);
+  $('#inReps').value = log ? log.reps : (last ? last.reps : 10);
+  if(log){
+    const d = new Date(log.ts);
+    $('#logSub').textContent = `${HEB_DAYS[d.getDay()]}, ${d.getDate()} ב${HEB_MONTHS[d.getMonth()]}`;
+    $('#inTime').value = fmtTime(log.ts);
+  } else {
+    const t = dayTotals(todayKey()).get(exId);
+    $('#logSub').textContent = t ? `היום כבר: ${t.reps} חזרות` : 'ביצוע ראשון היום';
+  }
+  $('#timeRow').style.display = log ? '' : 'none';
+  $('#delLog').style.display = log ? '' : 'none';
+  $('#saveLog').textContent = log ? 'שמירת השינויים' : 'שמירה';
+  updTotal(); open('#logSheet');
+}
+const num = el => Math.max(1, parseInt(el.value,10) || 0);
+function updTotal(){ $('#logTotal').textContent = num($('#inSets')) * num($('#inReps')); }
+document.querySelectorAll('[data-step]').forEach(b => b.onclick = () => {
+  const el = b.dataset.step==='sets' ? $('#inSets') : $('#inReps');
+  el.value = Math.max(1, num(el) + Number(b.dataset.d)); updTotal();
+});
+['#inSets','#inReps'].forEach(s => $(s).addEventListener('input', updTotal));
+$('#saveLog').onclick = () => {
+  const sets = num($('#inSets')), reps = num($('#inReps'));
+  if(cur.logId){
+    const l = db.logs.find(x=>x.id===cur.logId);
+    l.sets = sets; l.reps = reps;
+    const [h,m] = ($('#inTime').value || fmtTime(l.ts)).split(':').map(Number);
+    const d = new Date(l.ts); d.setHours(h,m,0,0); l.ts = d.getTime();
+    toast('הרישום עודכן');
+  } else {
+    const ex = db.exercises.find(e=>e.id===cur.exId);
+    const ts = Date.now();
+    db.logs.push({id:uid(), exId:ex.id, name:ex.name, sets, reps, ts});
+    const t = dayTotals(dayKey(new Date(ts))).get(ex.id);
+    toast(`נשמר ✓  היום: ${t.reps} חזרות`);
+  }
+  save(); closeAll(); render();
+};
+$('#delLog').onclick = () => {
+  if(!confirm('למחוק את הרישום הזה?')) return;
+  db.logs = db.logs.filter(l=>l.id!==cur.logId); save(); closeAll(); render(); toast('הרישום נמחק');
+};
+
+// ---------- day view ----------
+let viewDay = todayKey();
+function renderDay(){
+  $('#hdr').textContent = 'יומן';
+  $('#hdrBtn').textContent = 'לוח שנה';
+  const d = keyToDate(viewDay), tk = todayKey();
+  $('#dayTitle').textContent = viewDay===tk ? 'היום' : viewDay===addDays(tk,-1) ? 'אתמול' : `יום ${HEB_DAYS[d.getDay()]}`;
+  $('#daySub').textContent = `${d.getDate()} ב${HEB_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+  $('#nextDay').disabled = viewDay >= tk;
+  $('#nextDay').style.opacity = viewDay >= tk ? .35 : 1;
+  const logs = logsOn(viewDay);
+  if(!logs.length){ $('#dayBody').innerHTML = '<div class="empty">לא נרשמו תרגילים ביום הזה</div>'; return; }
+  const tots = [...dayTotals(viewDay).values()];
+  $('#dayBody').innerHTML =
+    `<div class="section-t">סיכום היום</div><div class="sum">` +
+    tots.map(t => `<div class="sum-row"><span>${esc(t.name)}</span><span><b>${t.reps}</b> חזרות · ${t.times===1 ? 'פעם אחת' : t.times+' פעמים'}</span></div>`).join('') +
+    `</div><div class="section-t">כל הביצועים (לחיצה לעריכה)</div><div class="entries">` +
+    logs.map(l => `<button class="entry" data-id="${l.id}"><span class="tm">${fmtTime(l.ts)}</span>
+      <span class="nm">${esc(exName(l))}</span><span class="rp">${l.sets} × ${l.reps} = <b>${total(l)}</b></span></button>`).join('') +
+    `</div>`;
+  $('#dayBody').querySelectorAll('.entry').forEach(b => b.onclick = () => openLog({logId:b.dataset.id}));
+}
+function shiftDay(n){
+  const nk = addDays(viewDay, n);
+  if(nk > todayKey()) return;
+  viewDay = nk; renderDay();
+}
+$('#prevDay').onclick = () => shiftDay(-1);
+$('#nextDay').onclick = () => shiftDay(1);
+// swipe: finger right = next day, finger left = previous day (RTL)
+(function(){
+  const el = $('#v-day'); let x0=null, y0=null;
+  el.addEventListener('touchstart', e => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, {passive:true});
+  el.addEventListener('touchend', e => {
+    if(x0===null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if(Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)*1.5) shiftDay(dx > 0 ? 1 : -1);
+  }, {passive:true});
+})();
+
+// ---------- calendar ----------
+let calMonth = todayKey().slice(0,7);
+function openCal(){ renderCal(); open('#calSheet'); }
+function renderCal(){
+  const [y,m] = calMonth.split('-').map(Number);
+  $('#calTitle').textContent = `${HEB_MONTHS[m-1]} ${y}`;
+  const days = new Set(db.logs.map(l => dayKey(new Date(l.ts))));
+  const first = new Date(y,m-1,1), n = new Date(y,m,0).getDate(), tk = todayKey();
+  let h = HEB_DAYS.map(d => `<div class="wd">${d[0]}׳</div>`).join('');
+  for(let i=0;i<first.getDay();i++) h += '<div></div>';
+  for(let d=1; d<=n; d++){
+    const k = `${y}-${pad(m)}-${pad(d)}`;
+    const cls = [days.has(k)?'has':'', k===tk?'today':'', k===viewDay?'sel':''].join(' ');
+    h += `<button class="${cls}" data-k="${k}" ${k>tk?'disabled':''}>${d}</button>`;
+  }
+  $('#calGrid').innerHTML = h;
+  $('#calGrid').querySelectorAll('button').forEach(b => b.onclick = () => { viewDay = b.dataset.k; closeAll(); renderDay(); });
+  $('#calNext').disabled = calMonth >= tk.slice(0,7);
+}
+function shiftMonth(n){ const [y,m] = calMonth.split('-').map(Number); const d = new Date(y, m-1+n, 1); calMonth = d.getFullYear()+'-'+pad(d.getMonth()+1); renderCal(); }
+$('#calPrev').onclick = () => shiftMonth(-1);
+$('#calNext').onclick = () => shiftMonth(1);
+
+// ---------- progress ----------
+let progEx = null, progRange = 30;
+function renderProg(){
+  $('#hdr').textContent = 'התקדמות';
+  $('#hdrBtn').textContent = 'יומן';
+  const ids = [...db.exercises.map(e=>e.id), ...new Set(db.logs.map(l=>l.exId))].filter((v,i,a)=>a.indexOf(v)===i);
+  const named = ids.map(id => ({id, name: (db.exercises.find(e=>e.id===id)||db.logs.find(l=>l.exId===id)||{}).name})).filter(x=>x.name);
+  if(!named.length){ $('#progChips').innerHTML=''; $('#progBody').innerHTML = '<div class="empty">אחרי שתרשמי ביצועים יופיע כאן גרף ההתקדמות לכל תרגיל</div>'; return; }
+  if(!named.some(x=>x.id===progEx)) progEx = named[0].id;
+  $('#progChips').innerHTML = named.map(x => `<button class="chip ${x.id===progEx?'on':''}" data-id="${x.id}">${esc(x.name)}</button>`).join('');
+  $('#progChips').querySelectorAll('.chip').forEach(b => b.onclick = () => { progEx = b.dataset.id; renderProg(); });
+
+  // daily totals for this exercise
+  const byDay = new Map();
+  for(const l of db.logs) if(l.exId===progEx){ const k = dayKey(new Date(l.ts)); byDay.set(k, (byDay.get(k)||0) + total(l)); }
+  const tk = todayKey();
+  const firstKey = [...byDay.keys()].sort()[0] || tk;
+  let start = progRange ? addDays(tk, -(progRange-1)) : firstKey;
+  if(!progRange && start > addDays(tk,-6)) start = addDays(tk,-6);
+  const keys = []; for(let k=start; k<=tk; k=addDays(k,1)) keys.push(k);
+  const pts = keys.map((k,i) => ({k, i, v: byDay.get(k)})).filter(p => p.v != null);
+
+  const name = named.find(x=>x.id===progEx).name;
+  const vals = [...byDay.values()];
+  const best = vals.length ? Math.max(...vals) : 0;
+  const last7 = []; for(let i=0;i<7;i++) last7.push(byDay.get(addDays(tk,-i))||0);
+  const avg7 = Math.round(last7.reduce((a,b)=>a+b,0)/7);
+
+  $('#progBody').innerHTML = `
+    <div class="chart-card">
+      <h3>${esc(name)}</h3>
+      <p class="cap">סך החזרות בכל יום</p>
+      ${chartSVG(keys, pts)}
+      <div class="tip" id="tip"></div>
+      <div class="ranges">${[[14,'שבועיים'],[30,'חודש'],[90,'3 חודשים'],[0,'הכול']].map(([r,t]) =>
+        `<button class="chip ${r===progRange?'on':''}" data-r="${r}">${t}</button>`).join('')}</div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${byDay.get(tk)||0}</b><span>היום</span></div>
+      <div class="stat"><b>${avg7}</b><span>ממוצע 7 ימים</span></div>
+      <div class="stat"><b>${best}</b><span>שיא יומי</span></div>
+    </div>`;
+  $('#progBody').querySelectorAll('[data-r]').forEach(b => b.onclick = () => { progRange = Number(b.dataset.r); renderProg(); });
+  bindChart(keys, pts);
+}
+const CH = {w:340, h:210, l:34, r:10, t:12, b:28};
+// top of the y-axis: 4 round, whole-number steps
+function niceMax(v){
+  const raw = Math.max(1, v/4), p = Math.pow(10, Math.floor(Math.log10(raw)));
+  for(const m of [1,2,5,10]) if(m*p >= raw) return Math.max(4, Math.ceil(m*p)*4);
+}
+function chartSVG(keys, pts){
+  const {w,h,l,r,t,b} = CH, iw = w-l-r, ih = h-t-b;
+  const max = niceMax(Math.max(1, ...pts.map(p=>p.v)));
+  const x = i => l + (keys.length<2 ? iw/2 : i*iw/(keys.length-1));
+  const y = v => t + ih - v/max*ih;
+  let g = '';
+  for(let i=0;i<=4;i++){
+    const v = max*i/4, yy = y(v);
+    g += `<line x1="${l}" x2="${w-r}" y1="${yy}" y2="${yy}" stroke="var(--grid)" stroke-width="1"/>`;
+    g += `<text x="${l-6}" y="${yy+4}" text-anchor="end" font-size="10" fill="var(--muted)">${Math.round(v)}</text>`;
+  }
+  const step = Math.max(1, Math.ceil(keys.length/5));
+  keys.forEach((k,i) => {
+    if(i % step && i !== keys.length-1) return;
+    if(i !== keys.length-1 && keys.length-1-i < step*0.6) return;
+    const d = keyToDate(k);
+    const anchor = keys.length > 1 && i === keys.length-1 ? 'end' : 'middle';
+    g += `<text x="${x(i)}" y="${h-8}" text-anchor="${anchor}" font-size="10" fill="var(--muted)">${d.getDate()}/${d.getMonth()+1}</text>`;
+  });
+  const path = pts.map((p,j) => (j?'L':'M') + x(p.i).toFixed(1) + ' ' + y(p.v).toFixed(1)).join(' ');
+  const dots = pts.map(p => `<circle cx="${x(p.i)}" cy="${y(p.v)}" r="4" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>`).join('');
+  const emptyMsg = pts.length ? '' : `<text x="${l+iw/2}" y="${t+ih/2}" text-anchor="middle" font-size="13" fill="var(--muted)">אין רישומים בטווח הזה</text>`;
+  return `<svg viewBox="0 0 ${w} ${h}" dir="ltr" role="img" aria-label="גרף חזרות יומי">
+    ${g}<path d="${path}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}${emptyMsg}
+    <line id="cross" x1="0" x2="0" y1="${t}" y2="${t+ih}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3 3" style="display:none"/>
+    <rect id="hit" x="${l}" y="0" width="${iw}" height="${h}" fill="transparent"/></svg>`;
+}
+function bindChart(keys, pts){
+  const svg = $('#progBody svg'), tip = $('#tip'), cross = svg.querySelector('#cross');
+  if(!pts.length) return;
+  const {w,l,r,t,h,b} = CH, iw = w-l-r, ih = h-t-b;
+  const max = niceMax(Math.max(1, ...pts.map(p=>p.v)));
+  const xOf = i => l + (keys.length<2 ? iw/2 : i*iw/(keys.length-1));
+  function show(ev){
+    const rect = svg.getBoundingClientRect(), sc = rect.width / w;
+    const cx = ((ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left) / sc;
+    let best = pts[0]; for(const p of pts) if(Math.abs(xOf(p.i)-cx) < Math.abs(xOf(best.i)-cx)) best = p;
+    const px = xOf(best.i), py = t + ih - best.v/max*ih;
+    cross.setAttribute('x1',px); cross.setAttribute('x2',px); cross.style.display='';
+    const d = keyToDate(best.k);
+    tip.textContent = `${d.getDate()}/${d.getMonth()+1}: ${best.v} חזרות`;
+    tip.style.display = 'block';
+    const cardRect = svg.parentElement.getBoundingClientRect();
+    tip.style.left = Math.min(Math.max(rect.left - cardRect.left + px*sc, 60), cardRect.width-60) + 'px';
+    tip.style.top = (rect.top - cardRect.top + py*sc - 10) + 'px';
+  }
+  function hide(){ tip.style.display='none'; cross.style.display='none'; }
+  svg.addEventListener('pointermove', show);
+  svg.addEventListener('pointerdown', show);
+  svg.addEventListener('pointerleave', hide);
+}
+
+// ---------- backup / share ----------
+async function shareFile(name, text, type){
+  const blob = new Blob([text], {type});
+  const file = new File([blob], name, {type});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title:name}); return; }
+    catch(e){ if(e.name==='AbortError') return; }
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+}
+const csvCell = v => { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; };
+$('#exportCsv').onclick = () => {
+  if(!db.logs.length){ toast('אין עדיין רישומים'); return; }
+  const logs = [...db.logs].sort((a,b)=>a.ts-b.ts);
+  const daily = new Map();
+  for(const l of logs){
+    const k = dayKey(new Date(l.ts)) + '|' + l.exId;
+    const c = daily.get(k) || {date:dayKey(new Date(l.ts)), name:exName(l), reps:0, times:0};
+    c.reps += total(l); c.times++; daily.set(k, c);
+  }
+  const rows = [['סיכום יומי'],['תאריך','תרגיל','סה"כ חזרות','מספר ביצועים']];
+  for(const c of daily.values()) rows.push([c.date, c.name, c.reps, c.times]);
+  rows.push([], ['כל הרישומים'], ['תאריך','שעה','תרגיל','סטים','חזרות בסט','סה"כ']);
+  for(const l of logs) rows.push([dayKey(new Date(l.ts)), fmtTime(l.ts), exName(l), l.sets, l.reps, total(l)]);
+  const csv = '﻿' + rows.map(r => r.map(csvCell).join(',')).join('\r\n');
+  shareFile(`physio-${todayKey()}.csv`, csv, 'text/csv');
+};
+$('#exportJson').onclick = () => shareFile(`physio-backup-${todayKey()}.json`, JSON.stringify({app:'physio-tracker', v:1, ...db}), 'application/json');
+$('#importBtn').onclick = () => $('#importFile').click();
+$('#importFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
+  try{
+    const d = JSON.parse(await f.text());
+    if(!Array.isArray(d.exercises) || !Array.isArray(d.logs)) throw 0;
+    if(!confirm(`לשחזר ${d.exercises.length} תרגילים ו-${d.logs.length} רישומים?\nהנתונים הנוכחיים יוחלפו.`)) return;
+    db = {exercises:d.exercises, logs:d.logs}; save(); closeAll(); render(); toast('הנתונים שוחזרו');
+  }catch(err){ toast('הקובץ לא תקין'); }
+};
+
+// refresh "today" when returning to the app
+document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
+
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+})();
+</script>
+</body>
+</html>
