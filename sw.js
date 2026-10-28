@@ -1,5 +1,5 @@
 // Bump VERSION whenever the app files change so phones pick up the update.
-const VERSION = 'physio-v3';
+const VERSION = 'physio-v4';
 const FILES = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
