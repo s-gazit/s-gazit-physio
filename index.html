@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>יומן פיזיותרפיה</title>
-<meta name="theme-color" content="#0f766e">
+<meta name="theme-color" content="#faf5ea">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,18 +13,13 @@
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" href="icons/icon-192.png">
 <style>
+/* cream theme; always light, even when the phone is in dark mode */
 :root{
-  --bg:#f4f6f6; --card:#ffffff; --ink:#14201f; --ink2:#4b5b59; --muted:#83918f;
-  --line:#dfe5e4; --accent:#0f766e; --accent-ink:#ffffff; --accent-soft:#e2f2f0;
-  --danger:#b42318; --grid:#e8eceb;
+  color-scheme:light;
+  --bg:#faf5ea; --card:#fffdf7; --ink:#2b2620; --ink2:#5f564a; --muted:#8d8373;
+  --line:#ebe2d1; --accent:#0f766e; --accent-ink:#ffffff; --accent-soft:#e3efe9;
+  --danger:#b42318; --grid:#efe7d8;
   --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
-}
-@media (prefers-color-scheme:dark){
-  :root{
-    --bg:#0e1413; --card:#18201f; --ink:#e9efee; --ink2:#a9b6b4; --muted:#76837f;
-    --line:#2a3432; --accent:#2fb8a9; --accent-ink:#06201d; --accent-soft:#16302d;
-    --danger:#f97066; --grid:#232c2b;
-  }
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
