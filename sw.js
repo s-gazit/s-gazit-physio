@@ -1,5 +1,5 @@
 // Bump VERSION whenever the app files change so phones pick up the update.
-const VERSION = 'physio-v2';
+const VERSION = 'physio-v3';
 const FILES = ['./', 'index.html', 'manifest.json', 'icons/icon-180.png', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {
@@ -15,6 +15,8 @@ self.addEventListener('activate', e => {
 // Network first (so updates arrive), falling back to cache when offline.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  // the promo video is streamed in byte ranges; leave it to the browser
+  if (new URL(e.request.url).pathname.endsWith('.mp4')) return;
   e.respondWith(
     fetch(e.request)
       .then(res => {

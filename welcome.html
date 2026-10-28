@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>יומן פיזיותרפיה</title>
+<meta name="description" content="אפליקציה פשוטה וחינמית למעקב אחרי תרגילי פיזיותרפיה בתהליך שיקום">
+<meta property="og:title" content="יומן פיזיותרפיה">
+<meta property="og:description" content="אפליקציה פשוטה וחינמית למעקב אחרי תרגילי הפיזיותרפיה. צפו בסרטון והתקינו בלחיצה.">
+<meta property="og:image" content="https://s-gazit.github.io/s-gazit-physio/share.jpg">
+<meta property="og:url" content="https://s-gazit.github.io/s-gazit-physio/welcome.html">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#faf5ea">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<style>
+:root{color-scheme:light;--bg:#faf5ea;--card:#fffdf7;--ink:#2b2620;--ink2:#5f564a;--line:#ebe2d1;--accent:#0f766e;--soft:#e3efe9;--warn:#fff4dc;--warn-line:#f0d9a6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:17px;line-height:1.5}
+.wrap{max-width:480px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 28px) 16px 40px}
+.head{text-align:center;margin-bottom:20px}
+.head img{width:76px;height:76px;border-radius:18px;box-shadow:0 10px 24px rgba(15,118,110,.25)}
+h1{font-size:30px;margin:12px 0 4px}
+.lead{color:var(--ink2);margin:0}
+video{display:block;width:100%;max-width:min(340px,calc((100svh - 330px) * 9 / 16));margin:0 auto 22px;border-radius:24px;background:#efe6d4;box-shadow:0 16px 40px rgba(60,40,10,.18);aspect-ratio:9/16}
+.cta{display:block;text-align:center;text-decoration:none;background:var(--accent);color:#fff;font-weight:700;font-size:19px;padding:16px;border-radius:16px;margin-bottom:10px}
+.ghost{display:block;width:100%;text-align:center;background:var(--card);border:1px solid var(--line);color:var(--ink);font:inherit;font-weight:600;padding:13px;border-radius:16px;cursor:pointer}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px 18px;margin-top:22px}
+.card h2{font-size:19px;margin:0 0 10px}
+ol{margin:0;padding:0 22px 0 0}
+ol li{margin-bottom:8px}
+.key{display:inline-block;background:var(--soft);color:var(--accent);font-weight:700;border-radius:8px;padding:0 7px}
+.warn{background:var(--warn);border:1px solid var(--warn-line);border-radius:16px;padding:14px 16px;margin-bottom:18px;display:none}
+.warn b{display:block;margin-bottom:4px}
+.feats{list-style:none;padding:0;margin:0}
+.feats li{padding:6px 0;display:flex;gap:10px}
+.feats li::before{content:"✓";color:var(--accent);font-weight:800}
+.foot{text-align:center;color:var(--ink2);font-size:14px;margin-top:22px}
+.ios-only,.android-only{display:none}
+body.ios .ios-only,body.android .android-only{display:block}
+body.other .ios-only,body.other .android-only{display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <img src="icons/icon-180.png" alt="">
+    <h1>יומן פיזיותרפיה</h1>
+    <p class="lead">מעקב פשוט אחרי התרגילים בתהליך השיקום</p>
+  </div>
+
+  <div class="warn" id="inapp">
+    <b>כדי להתקין צריך לפתוח את הדף בדפדפן</b>
+    <span id="inappText">לוחצים על ⋯ או על סמל המצפן בפינת המסך ובוחרים "פתיחה ב-Safari".</span>
+  </div>
+
+  <video src="promo.mp4" poster="poster.jpg" controls playsinline preload="metadata"></video>
+
+  <a class="cta" href="./">לפתיחת האפליקציה</a>
+  <button class="ghost" id="copy">שליחת הקישור לחברים</button>
+
+  <div class="card ios-only">
+    <h2>התקנה באייפון</h2>
+    <ol>
+      <li>פותחים את הדף ב-<b>Safari</b></li>
+      <li>לוחצים <b>לפתיחת האפליקציה</b></li>
+      <li>לוחצים על כפתור <span class="key">שיתוף</span> (ריבוע עם חץ למעלה)</li>
+      <li>בוחרים <span class="key">הוספה למסך הבית</span> ← <span class="key">הוספה</span></li>
+    </ol>
+  </div>
+
+  <div class="card android-only">
+    <h2>התקנה באנדרואיד</h2>
+    <ol>
+      <li>פותחים את הדף ב-<b>Chrome</b></li>
+      <li>לוחצים <b>לפתיחת האפליקציה</b></li>
+      <li>לוחצים על התפריט <span class="key">⋮</span> למעלה</li>
+      <li>בוחרים <span class="key">התקנת אפליקציה</span> או <span class="key">הוספה למסך הבית</span></li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>מה יש באפליקציה</h2>
+    <ul class="feats">
+      <li>רישום סטים וחזרות בלחיצה אחרי כל תרגיל</li>
+      <li>סיכום יומי של כמה חזרות עשית מכל תרגיל</li>
+      <li>יומן עם לוח שנה ומעבר בין ימים</li>
+      <li>גרף התקדמות לכל תרגיל</li>
+      <li>שליחת טבלה מסודרת לפיזיותרפיסט</li>
+    </ul>
+  </div>
+
+  <p class="foot">חינם · עובד גם בלי אינטרנט · הנתונים נשמרים רק בטלפון שלך</p>
+</div>
+
+<script>
+(function(){
+  const ua = navigator.userAgent;
+  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const android = /Android/.test(ua);
+  document.body.classList.add(ios ? 'ios' : android ? 'android' : 'other');
+  // in-app browsers (WhatsApp, Instagram, Facebook...) can't add to the home screen
+  const inApp = /WhatsApp|Instagram|FBAN|FBAV|FB_IAB|Line\/|Telegram/i.test(ua) || (ios && !/Safari/.test(ua));
+  if(inApp){
+    document.getElementById('inapp').style.display = 'block';
+    if(android) document.getElementById('inappText').textContent = 'לוחצים על ⋮ בפינת המסך ובוחרים "פתיחה ב-Chrome".';
+  }
+  const url = 'https://s-gazit.github.io/s-gazit-physio/welcome.html';
+  const btn = document.getElementById('copy');
+  btn.onclick = async () => {
+    if(navigator.share){ try{ await navigator.share({title:'יומן פיזיותרפיה', url}); return; }catch(e){ if(e.name==='AbortError') return; } }
+    try{ await navigator.clipboard.writeText(url); btn.textContent = 'הקישור הועתק ✓'; }
+    catch(e){ prompt('העתיקו את הקישור:', url); }
+  };
+})();
+</script>
+</body>
+</html>
