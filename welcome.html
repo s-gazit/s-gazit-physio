@@ -17,16 +17,26 @@
 :root{color-scheme:light;--ink:#2b2620;--ink2:#5f564a;--accent:#0f766e;--card:#fffdf7;--line:#ebe2d1}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;overflow:hidden}
-body{background:linear-gradient(#f8f4e9,#f0e5cf);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-/* phones are taller than the 9:16 video: fill the screen (trims a little off the sides, where nothing important is);
+body{--ctrl:calc(46px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(#f8f4e9,#f0e5cf);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+/* the video sits above a control strip, so the buttons never cover the video's own text.
+   phones are taller than 9:16: fill the space (trims a little off the sides, where nothing important is);
    wider screens show the whole video */
-video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:transparent}
-@media (min-aspect-ratio: 9/16){ video{object-fit:contain} }
+video{position:fixed;top:0;left:0;right:0;bottom:var(--ctrl);width:100%;height:calc(100% - var(--ctrl));object-fit:contain;background:transparent}
+video.fill{object-fit:cover}
 
 .bar{position:fixed;top:0;left:0;right:0;height:4px;background:rgba(15,118,110,.15);z-index:2}
 .bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear}
-.skip{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;z-index:3;border:0;border-radius:999px;padding:9px 16px;
-  background:rgba(43,38,32,.55);color:#fff;font:inherit;font-size:15px;font-weight:600;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+
+.controls{position:fixed;left:0;right:0;bottom:0;height:var(--ctrl);z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:0 12px env(safe-area-inset-bottom,0px);background:#f0e5cf}
+.to-app{border-radius:999px;padding:6px 16px;font-size:15px;font-weight:700;text-decoration:none;white-space:nowrap;background:var(--accent);color:#fff}
+/* phones only allow sound after a tap, so the video starts muted with a small speaker button */
+.sound{width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--card);color:var(--accent);border:1.5px solid var(--accent);animation:pulse 1.6s ease-in-out infinite}
+.sound svg{width:18px;height:18px}
+.sound.on{animation:none;border-color:var(--line);color:var(--ink2)}
+@keyframes pulse{50%{transform:scale(1.12)}}
 
 .play{position:fixed;inset:0;z-index:4;display:none;align-items:center;justify-content:center;border:0;background:rgba(248,244,233,.35)}
 .play.on{display:flex}
@@ -47,9 +57,12 @@ video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:
 </style>
 </head>
 <body>
-<video id="v" src="promo.mp4" poster="poster.jpg" playsinline muted autoplay preload="auto"></video>
+<video id="v" src="promo.mp4?v=3" poster="poster.jpg" playsinline muted autoplay preload="auto"></video>
 <div class="bar"><i id="prog"></i></div>
-<button class="skip" id="skip">דילוג</button>
+<div class="controls">
+  <button class="sound" id="sound" aria-label="הפעלת צליל"></button>
+  <a class="to-app" href="./">לאפליקציה</a>
+</div>
 <button class="play" id="play" aria-label="הפעלת הסרטון"><span><svg viewBox="0 0 24 24" fill="#fff"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></span></button>
 
 <div class="end" id="end">
@@ -65,21 +78,37 @@ video{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:
 <script>
 (function(){
   const v = document.getElementById('v'), end = document.getElementById('end'), play = document.getElementById('play');
-  const showEnd = () => { v.pause(); end.classList.add('on'); };
+  const sound = document.getElementById('sound');
+  // fill the space only when it is taller than the 9:16 video (then only the empty sides get trimmed);
+  // otherwise show the whole video so no text is cut
+  const fit = () => v.classList.toggle('fill', v.clientWidth / v.clientHeight < 9 / 16);
+  fit(); addEventListener('resize', fit);
+  const showEnd = () => end.classList.add('on');
+  const SPEAKER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z" fill="currentColor"/>';
+  const icon = muted => SPEAKER + (muted ? '<path d="m16 9 6 6M22 9l-6 6"/>' : '<path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/>') + '</svg>';
+  sound.innerHTML = icon(true);
+  function setMuted(m){
+    v.muted = m;
+    sound.classList.add('on');
+    sound.innerHTML = icon(m);
+    sound.setAttribute('aria-label', m ? 'הפעלת צליל' : 'השתקה');
+  }
   function start(){
     play.classList.remove('on');
     v.play().catch(() => play.classList.add('on')); // e.g. iPhone in Low Power Mode blocks autoplay
   }
   v.addEventListener('ended', showEnd);
-  // the video's last ~5s are a still closing frame: bring the card up ~1.5s into it instead of waiting for the end
+  // the video's last ~5s are a still closing frame: bring the card up ~1.5s into it instead of waiting for the end.
+  // the video keeps playing under the card so the music fades out on its own
   const CARD_BEFORE_END = 3.2;
   v.addEventListener('timeupdate', () => {
     if(!v.duration) return;
     document.getElementById('prog').style.width = (v.currentTime / v.duration * 100) + '%';
     if(v.currentTime >= v.duration - CARD_BEFORE_END && !end.classList.contains('on')) showEnd();
   });
-  document.getElementById('skip').onclick = showEnd;
-  play.onclick = start;
+  sound.onclick = () => { setMuted(!v.muted); if(v.paused && !end.classList.contains('on')) start(); };
+  // tapping the big play button is a tap too, so the video can start with sound
+  play.onclick = () => { setMuted(false); start(); };
   document.getElementById('again').onclick = () => { end.classList.remove('on'); v.currentTime = 0; start(); };
   start();
 })();
