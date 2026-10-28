@@ -124,21 +124,21 @@ nav.tabs button.on{color:var(--accent);font-weight:600}
 .toast.on{opacity:1}
 .note{font-size:13px;color:var(--muted);line-height:1.5;margin:6px 2px 14px}
 
-/* install prompt (only when opened in a browser, not from the home screen) */
-.install-bar{display:none;align-items:center;justify-content:center;gap:8px;width:100%;border:0;background:var(--accent);color:var(--accent-ink);
-  font-weight:700;font-size:15px;padding:calc(var(--safe-t) + 9px) 12px 9px}
-.install-bar.on{display:flex}
-.steps{list-style:none;margin:0 0 16px;padding:0;counter-reset:s}
-.steps li{counter-increment:s;display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:13px 14px;margin-bottom:8px;line-height:1.45}
-.steps li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-weight:700;display:flex;align-items:center;justify-content:center}
-.steps .ic{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;min-width:30px;height:28px;padding:0 6px;border-radius:8px;background:var(--accent-soft);color:var(--accent);font-weight:700;margin:0 2px}
-.steps .ic svg{width:18px;height:18px}
-.warn-box{background:#fff4dc;border:1px solid #f0d9a6;border-radius:16px;padding:12px 14px;margin-bottom:14px;line-height:1.5}
+/* welcome screen (only when opened in a browser, not from the home screen) */
+.welcome{position:fixed;inset:0;z-index:30;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:calc(var(--safe-t) + 24px) 24px calc(var(--safe-b) + 24px);overflow-y:auto;
+  background:radial-gradient(420px 320px at 85% 0%, #e3efe9 0%, transparent 70%),linear-gradient(var(--bg),#f1e6d0);transition:opacity .35s}
+.welcome.on{display:flex}
+.welcome.out{opacity:0}
+.welcome img{width:104px;height:104px;border-radius:24px;box-shadow:0 14px 30px rgba(15,118,110,.28);margin-bottom:18px}
+.welcome h1{font-size:32px;margin:0 0 6px}
+.welcome .tag{color:var(--ink2);font-size:18px;line-height:1.4;margin:0 0 22px}
+.welcome .how{width:100%;max-width:360px;background:var(--accent-soft);border-radius:18px;padding:20px 16px;font-size:20px;line-height:1.5;margin-bottom:22px;color:var(--ink)}
+.welcome .btns{width:100%;max-width:360px}
 </style>
 </head>
 <body>
 <div class="app">
-  <button class="install-bar" id="installBar">📲 התקנת האפליקציה במסך הבית</button>
   <header>
     <h1 id="hdr">התרגילים שלי</h1>
     <button class="icon-btn" id="hdrBtn">עריכה</button>
@@ -247,14 +247,13 @@ nav.tabs button.on{color:var(--accent);font-weight:600}
   </div>
 </div>
 
-<!-- install -->
-<div class="backdrop" id="installSheet">
-  <div class="sheet">
-    <h2>התקנה במסך הבית</h2>
-    <div class="sub">כך האפליקציה תיפתח מאייקון ותעבוד גם בלי אינטרנט</div>
-    <div id="installBody"></div>
-    <button class="secondary" data-close>אחר כך</button>
-  </div>
+<!-- welcome -->
+<div class="welcome" id="welcome">
+  <img src="icons/icon-180.png" alt="">
+  <h1>יומן פיזיותרפיה</h1>
+  <p class="tag">מעקב פשוט אחרי התרגילים<br>בתהליך השיקום</p>
+  <div class="how">כדי שנתוניך יישמרו<br>יש להוריד את האפליקציה<br><b>למסך הבית</b></div>
+  <div class="btns"><button class="primary" id="wGo">הבנתי</button></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -648,43 +647,19 @@ $('#importFile').onchange = async e => {
 // refresh "today" when returning to the app
 document.addEventListener('visibilitychange', () => { if(!document.hidden) render(); });
 
-// ---------- install prompt ----------
+// ---------- welcome screen ----------
+// Shown once, the first time the app is opened as a web page (never when opened from the home-screen icon).
 (function(){
   const standalone = navigator.standalone || matchMedia('(display-mode: standalone)').matches;
-  const ua = navigator.userAgent;
-  const ios = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const android = /Android/.test(ua);
-  if(standalone || !(ios || android)) return;
-  const inApp = /WhatsApp|Instagram|FBAN|FBAV|FB_IAB|Line\/|Telegram/i.test(ua);
-  const shareIc = '<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg></span>';
-  let deferred = null;
-
-  function body(){
-    if(inApp) return `<div class="warn-box"><b>הדף נפתח בתוך ${/WhatsApp/i.test(ua)?'וואטסאפ':'אפליקציה אחרת'}, ומכאן אי אפשר להתקין.</b></div>
-      <ol class="steps">${ios
-        ? `<li>לוחצים על <span class="ic">⋯</span> או על סמל המצפן בפינת המסך</li><li>בוחרים <b>פתיחה ב-Safari</b></li><li>שם יופיעו הוראות ההתקנה</li>`
-        : `<li>לוחצים על <span class="ic">⋮</span> בפינת המסך</li><li>בוחרים <b>פתיחה ב-Chrome</b></li><li>שם יופיעו הוראות ההתקנה</li>`}</ol>`;
-    if(android && deferred) return `<button class="primary" id="doInstall">התקנה</button><div class="gap"></div>`;
-    if(android) return `<ol class="steps"><li>לוחצים על <span class="ic">⋮</span> למעלה בפינת המסך</li>
-      <li>בוחרים <b>התקנת אפליקציה</b> או <b>הוספה למסך הבית</b></li><li>מאשרים, ומעכשיו פותחים מהאייקון</li></ol>`;
-    return `<ol class="steps"><li>לוחצים על <span class="ic">⋯</span> בתחתית המסך, או ישר על כפתור השיתוף ${shareIc}</li>
-      <li>בתפריט השיתוף גוללים ובוחרים <b>הוספה למסך הבית</b></li>
-      <li>לוחצים <b>הוספה</b>, ומעכשיו פותחים מהאייקון</li></ol>
-      <div class="note">חשוב: הנתונים שנרשמים כאן בדפדפן לא עוברים לאייקון, ולכן כדאי להתקין לפני שמתחילים.</div>`;
-  }
-  function openInstall(){
-    // wrap each step's text so bold words stay inline next to the step number
-    $('#installBody').innerHTML = body().replace(/<li>/g, '<li><span>').replace(/<\/li>/g, '</span></li>');
-    const b = $('#doInstall');
-    if(b) b.onclick = async () => { deferred.prompt(); const r = await deferred.userChoice; deferred = null; closeAll(); if(r.outcome==='accepted') toast('האפליקציה הותקנה ✓'); };
-    open('#installSheet');
-  }
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferred = e; });
-  window.addEventListener('appinstalled', () => { $('#installBar').classList.remove('on'); closeAll(); });
-  $('#installBar').classList.add('on');
-  $('#installBar').onclick = openInstall;
-  let shown = false; try{ shown = sessionStorage.getItem('installShown'); }catch(e){}
-  if(!shown){ setTimeout(openInstall, 600); try{ sessionStorage.setItem('installShown','1'); }catch(e){} }
+  if(standalone) return;
+  let seen = false; try{ seen = localStorage.getItem('physio-welcomed'); }catch(e){}
+  if(seen) return;
+  $('#welcome').classList.add('on');
+  $('#wGo').onclick = () => {
+    const w = $('#welcome'); w.classList.add('out');
+    setTimeout(() => w.classList.remove('on','out'), 350);
+    try{ localStorage.setItem('physio-welcomed','1'); }catch(e){}
+  };
 })();
 
 render();
